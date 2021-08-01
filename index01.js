@@ -31,3 +31,6 @@ function convertArrayToObject() {
   });
   console.log(allDetails);
 }
+
+
+
