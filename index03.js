@@ -212,4 +212,41 @@ signin({ email: email, password: password })
 
 
 
+//////////////////////////product rating/////////////////
 
+////////since user is already logged-in, his username is already saved in localStorage//////
+const username = localStorage.getItem("username")
+/////since we are a product page so we can have productId/////
+
+const productId = useParams()
+
+///as user clicked on a product the perticular product page will open and there is a option of rate product will be shown///
+//////as soon as user input the rate and click on save we will update the data///// 
+
+const [products, setProducts] = useState(product)
+/////initial value taken from abve declared product
+
+const [rate, setrate] = useState("")
+ 
+const submit = () => {
+  setProducts({ ...products, products.rate: rate })
+
+  const updateRate = await fetch(`${API}/${productId}`, {
+    method: "PUT",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ratings: rate}),
+  }).then((res) => res.json).catch(err=>console.log(err))
+  
+  updateRate()
+
+  }
+  
+  <form>
+<input name='rate' value={rate} placeholder="rate the product" onChange={()=> setrate(rate)} />
+
+<button type='submit' value='save' onClick={submit} />
+
+</form>
