@@ -84,3 +84,132 @@ const products = [
 // 	b. Create a function called ***averageRating*** which calculate the average rating of a product
 
 // c. Create a function called ***likeProduct***. This function will helps to like to the product if it is not liked and remove like if it was liked.
+
+
+////////////////////signUp ////////////////////////////////////
+
+                    ///serverside
+const signup = () => {
+  const user = new User(req.body);
+  user.save((err, user) => {
+    if (err) {
+      if (err.code === 11000) {
+        return res.status(400).json({
+          error: "Email already exist. Please try another email",
+        });
+      }
+      return res
+        .status(400)
+        .json({ error: "could not be able to save in db, pls try again" });
+    }
+    res.status(200).json({
+      name: user.name,
+      username: user.username,
+      email: user.email,
+      id: user._id,
+    });
+  });
+};
+
+                //client side
+const signup = (user) => {
+  return fetch(`${API}/signup`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(user),
+  })
+    .then((response) => {
+      console.log("response", response);
+      return response.json();
+    })
+    .catch((err) => console.log(err));
+};
+
+
+signup({ username, email, password }).then((data) => {
+  if (data.error) {
+  console.log("error: ", data.error);
+  }
+  console.log("signup successful");
+}).catch(console.log("error in signup"))
+
+
+
+/////////////////////////////////signin//////////////////////////
+////serverside
+const signin = (req, res) => {
+  const { email, password } = req.body;
+
+  if (!errors.isEmpty()) {
+    return res.status(422).json({
+      error: errors.array()[0].msg,
+    });
+  }
+
+  User.findOne({ email }, (err, user) => {
+    try {
+      if (err !== null) {
+        res.status(400).json({
+          error: "server error",
+        });
+      }
+      if (!user) {
+        return res.status(400).json({
+          error: "not a registered email",
+        });
+      }
+      if (user && user.authenticate(password) === false) {
+        /////authenticate defined in schema as method
+        return res.status(401).json({
+          error: "Email and password doesn't match",
+        });
+      }
+
+      //send response to front end
+      const { _id, email, username } = user;
+      return res.json({user: { _id, username, email } });
+    } catch (error) {
+      console.log(error);
+    }
+  });
+};
+
+
+///////client side
+export const signin = (user) => {
+  return fetch(`${API}/signin`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(user),
+  })
+    .then((response) => {
+      return response.json();
+    })
+    .catch((err) => console.log(err));
+};
+
+
+signin({ email: email, password: password })
+.then((data) => {
+  if (data.error) {
+    console.log("error: ", data.error);
+  } else {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("username", JSON.stringify(data.user.username));
+      localStorage.setItem("email", JSON.stringify(data.user.email));
+      console.log("signin successful");
+    }
+  }
+})
+.catch(console.log("sign in requestt failed"));
+
+
+
+
+
